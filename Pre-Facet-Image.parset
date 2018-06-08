@@ -42,6 +42,7 @@
 ! maxlambda_highres        = 7000     ## maximum uv-distance in lambda that will be used for imaging
 ! image_padding            = 1.4      ## how much padding shall we add during the imaging?
 ! axis_stretch             = 1.0      ## how much shall the y-axis be stretched or compressed?
+! idg_mode                 = hybrid   ## IDG mode to use: cpu or hybrid
 
 ## pipeline performance
 ! max_imagers_per_node     =  2      ## number of simultaneous imager process per node
@@ -119,7 +120,8 @@ combine_mapfile_deep.control.mapfile_in              =  do_magic_maps.output.sin
 combine_mapfile_deep.control.mapfile_dir             =  input.output.mapfile_dir
 combine_mapfile_deep.control.filename                =  combine_mapfile_deep.mapfile
 
-# first high-res imaging, length = nbands
+# first high-res imaging, length = 1
+# TODO: enable primary-beam correction for MFS image (add "-grid-with-beam" to inputkeys)
 wsclean_high_deep.control.kind                      =   recipe
 wsclean_high_deep.control.type                      =   executable_args
 wsclean_high_deep.control.executable                =   {{ wsclean_executable }}
@@ -162,20 +164,20 @@ createmap_high_deep_image.control.folder            =   input.output.working_dir
 createmap_high_deep_image.control.pattern           =   *wsclean_high_deep-MFS-image.fits
 
 # make source list for the high-res image, length = 1
+# Note: until image is primary-beam corrected, fluxes will be apparent
 make_source_list.control.type                       =   pythonplugin
 make_source_list.control.executable                 =   {{ scripts }}/make_source_list.py
 make_source_list.control.max_per_node               =   {{ max_imagers_per_node }}
 make_source_list.control.error_tolerance            =   {{ error_tolerance }}
 make_source_list.control.mapfile_in                 =   createmap_high_deep_image.output.mapfile
 make_source_list.control.inputkey                   =   imagefile
-make_source_list.control.outputkey                  =   maskfile
-make_source_list.argument.flags                     =   [imagefile,maskfile]
+make_source_list.control.outputkey                  =   catalogfile
+make_source_list.argument.flags                     =   [imagefile,catalogfile]
 make_source_list.argument.threshisl                 =   3.0
 make_source_list.argument.threshpix                 =   5.0
 make_source_list.argument.atrous_do                 =   True
 make_source_list.argument.rmsbox                    =   (60,20)
 make_source_list.argument.adaptive_rmsbox           =   True
-make_source_list.argument.img_format                =   fits
 
 # copy the high image to where we want it
 move_high_deep.control.kind                         =  recipe
@@ -186,7 +188,7 @@ move_high_deep.control.mapfile_in                   =  createmap_high_deep_image
 move_high_deep.control.inputkey                     =  source
 move_high_deep.control.arguments                    =  [source,{{ inspection_directory }}]
 
-# make feedback metadata for the output solutions
+# make feedback metadata for the output image
 make_image_metadata.control.kind                    =   feedback
 make_image_metadata.control.type                    =   get_metadata
 make_image_metadata.control.mapfile_in              =   createmap_high_deep_image.output.mapfile
