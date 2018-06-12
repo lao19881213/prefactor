@@ -66,7 +66,8 @@ pipeline.pluginpath        =  {{ prefactor_directory }}/plugins
 ########################################################
 
 # which steps to run
-pipeline.steps=[createmap_cal, ndppp_prep_cal, combine_data_cal_map, sky_cal, make_sourcedb, expand_sourcedb, calib_cal_parmmap, calib_cal, cal_apply, h5_imp_cal_map, h5imp_cal, prepare_losoto, process_losoto, mk_cal_values_dir, copy_cal_h5, make_h5parm_metadata]
+#pipeline.steps=[createmap_cal, ndppp_prep_cal, combine_data_cal_map, sky_cal, make_sourcedb, expand_sourcedb, calib_cal_parmmap, calib_cal, cal_apply, h5_imp_cal_map, h5imp_cal, prepare_losoto, process_losoto, mk_cal_values_dir, copy_cal_h5, make_h5parm_metadata]
+pipeline.steps=[createmap_cal, ndppp_prep_cal, combine_data_cal_map, sky_cal, make_sourcedb, expand_sourcedb, calib_cal_parmmap, calib_cal, cal_apply, h5_imp_cal_map, h5imp_cal, prepare_losoto, process_losoto, mk_cal_values_dir, copy_cal_h5]
 
 # generate a mapfile of all the calibrator data
 createmap_cal.control.kind                           =   plugin
