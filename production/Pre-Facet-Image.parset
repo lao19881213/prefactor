@@ -1,12 +1,11 @@
 ##################################################################################
-# Pre-Facet-Image Pipeline                                                       #
+# Pre-Facet-Image Production Pipeline                                            #
 #                                                                                #
 # Pipeline to do the imaging of the target data:                                 #
+# - intended for use in production runs on CEP                                   #
 # - requires LOFAR software version  >= 2.17                                     #
 # - requires WSClean software version >= 2.5                                     #
 # - expects shared filesystem, that all nodes can reach all files!               #
-#   (E.g. a single workstation or compute cluster with shared filesystem;        #
-#   doesn't work on multiple nodes on CEP3.)                                     #
 #                                                                                #
 # For this pipeline to work the data must have:                                  #
 # - in the DATA column:                                                          #
