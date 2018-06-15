@@ -39,7 +39,7 @@ def plugin_main(args, **kwargs):
             for f in in_files:
                 files += f.strip('[]').split(',')
         except:
-            files = kwargs['files']
+            files = kwargs['output_files']
             files = files.strip('[]').split(',')
         files = [f.strip() for f in files]
     if type(kwargs['hosts']) is str:

@@ -302,17 +302,16 @@ copy_output_h5parmfiles_map.control.mapfile_dir      =   input.output.mapfile_di
 copy_output_h5parmfiles_map.control.filename         =   output_h5parmfiles.mapfile
 
 # make the metadata for the output MS files
-make_msfiles_metadata.control.kind                   =   metadata
+make_msfiles_metadata.control.kind                   =   feedback
 make_msfiles_metadata.control.mapfile_in             =   ndppp_prep_cal.output.mapfile
-make_msfiles_metadata.control.inputkey               =   msfile
-make_msfiles_metadata.argument.metadata_file         =   {{ msfiles_metadata_file }}
-make_msfiles_metadata.argument.product_type          =   Correlated
-make_msfiles_metadata.argument.parset_prefix         =   {{ parset_prefix }}
+make_msfiles_metadata.control.metadata_file          =   {{ msfiles_metadata_file }}
+make_msfiles_metadata.control.product_type           =   Correlated
+make_msfiles_metadata.control.parset_prefix          =   {{ parset_prefix }}
 
 # make the metadata for the output solutions
-make_h5parm_metadata.control.kind                    =   metadata
-make_h5parm_metadata.control.mapfile_in              =   h5imp_cal.output.mapfile
-make_h5parm_metadata.control.inputkey                =   h5parm
-make_h5parm_metadata.argument.metadata_file          =   {{ h5parm_metadata_file }}
-make_h5parm_metadata.argument.product_type           =   InstrumentModel
-make_h5parm_metadata.argument.parset_prefix          =   {{ parset_prefix }}
+make_h5parm_metadata.control.kind                    =   feedback
+make_h5parm_metadata.control.mapfile_in              =   copy_output_h5parmfiles_map.output.mapfile
+make_h5parm_metadata.control.metadata_file           =   {{ h5parm_metadata_file }}
+make_h5parm_metadata.control.product_type            =   InstrumentModel
+make_h5parm_metadata.control.parset_prefix           =   {{ parset_prefix }}
+
