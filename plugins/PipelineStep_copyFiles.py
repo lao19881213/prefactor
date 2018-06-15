@@ -57,9 +57,14 @@ def plugin_main(args, **kwargs):
     for h, f in zip(hosts, files):
         # Copy file to output, deleting exiting file if needed
         # Note: should we use rsync here instead?
-        if os.path.exists(f):
-            delete_directory(f)
-        shutil.copytree(file_in, f)
+        if os.path.isdir(file_in):
+            if os.path.exists(f):
+                delete_directory(f)
+            shutil.copytree(file_in, f)
+        else:
+            if os.path.exists(f):
+                os.remove(f)
+            shutil.copyfile(file_in, f)
         map_out.data.append(DataProduct(h, f, False))
 
     fileid = os.path.join(mapfile_dir, filename)
