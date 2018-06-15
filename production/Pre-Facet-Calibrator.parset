@@ -9,8 +9,7 @@
 ##########################################################################
 
 ## information about the calibrator data
-! cal_input_path           =  /data/scratch/drabent  ## specify the directory where your calibrator data are stored
-! cal_input_pattern        =  L217455*.MS            ## regular expression pattern of all your calibrator files
+! cal_input_filenames      =  []  ## list of input MS filenames (full path)
 
 ## information about the output
 ! cal_output_filenames     = []  ## list of output MS filenames (full path)
@@ -57,16 +56,15 @@ pipeline.pluginpath        =  {{ prefactor_directory }}/plugins
 ! parset_prefix            =  none
 
 # which steps to run
-pipeline.steps=[createmap_cal, create_output_msfiles_map, ndppp_prep_cal, combine_data_cal_map, sky_cal, make_sourcedb, expand_sourcedb, calib_cal_parmmap, calib_cal, cal_apply, h5_imp_cal_map, h5imp_cal, prepare_losoto, process_losoto, mk_cal_values_dir, copy_cal_h5, copy_output_h5parmfiles_map, make_msfiles_metadata, make_h5parm_metadata]
+pipeline.steps=[createmap_cal, create_output_msfiles_map, ndppp_prep_cal, combine_data_cal_map, sky_cal, make_sourcedb, expand_sourcedb, calib_cal_parmmap, calib_cal, cal_apply, h5_imp_cal_map, h5imp_cal, prepare_losoto, process_losoto, mk_cal_values_dir, copy_cal_h5, copy_output_h5parmfiles, make_msfiles_metadata, make_h5parm_metadata]
 
 # generate a mapfile of all the calibrator data
 createmap_cal.control.kind                           =   plugin
-createmap_cal.control.type                           =   createMapfile
-createmap_cal.control.method                         =   mapfile_from_folder
+createmap_cal.control.type                           =   addListMapfile
+createmap_cal.control.hosts                          =   [localhost]
+createmap_cal.control.files                          =   {{ cal_input_filenames }}
 createmap_cal.control.mapfile_dir                    =   input.output.mapfile_dir
 createmap_cal.control.filename                       =   createmap_cal.mapfile
-createmap_cal.control.folder                         =   {{ cal_input_path }}
-createmap_cal.control.pattern                        =   {{ cal_input_pattern }}
 
 # generate a mapfile of the output MS files
 create_output_msfiles_map.control.kind               =   plugin
@@ -293,13 +291,13 @@ copy_cal_h5.control.inputkey                         =   source
 copy_cal_h5.control.arguments                        =   [source,{{ cal_values_directory }}]
 
 # copy h5parm to output files
-copy_output_h5parmfiles_map.control.kind             =   plugin
-copy_output_h5parmfiles_map.control.type             =   copyFiles
-copy_output_h5parmfiles_map.control.hosts            =   [localhost]
-copy_output_h5parmfiles_map.control.input_mapfile    =   h5imp_cal.output.mapfile
-copy_output_h5parmfiles_map.control.output_files     =   {{ h5parm_output_filenames }}
-copy_output_h5parmfiles_map.control.mapfile_dir      =   input.output.mapfile_dir
-copy_output_h5parmfiles_map.control.filename         =   output_h5parmfiles.mapfile
+copy_output_h5parmfiles.control.kind             =   plugin
+copy_output_h5parmfiles.control.type             =   copyFiles
+copy_output_h5parmfiles.control.hosts            =   [localhost]
+copy_output_h5parmfiles.control.input_mapfile    =   h5imp_cal.output.mapfile
+copy_output_h5parmfiles.control.output_files     =   {{ h5parm_output_filenames }}
+copy_output_h5parmfiles.control.mapfile_dir      =   input.output.mapfile_dir
+copy_output_h5parmfiles.control.filename         =   output_h5parmfiles.mapfile
 
 # make the metadata for the output MS files
 make_msfiles_metadata.control.kind                   =   feedback

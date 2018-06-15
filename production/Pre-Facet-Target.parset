@@ -11,22 +11,17 @@
 # - expects shared filesystem, that all nodes can reach all files!       #
 ##########################################################################
 
-##########################################
-### parameters you will need to adjust  ##
-##########################################
-
 ## information about the data
-! target_input_path        =  /data/scratch/drabent             ## specify the directory where your target data are stored
-! target_input_pattern     =  L217457*SB00*.MS                  ## regular expression pattern of all your target files
-! cal_values_directory     =  /data/scratch/drabent/cal_values  ## where the files with the calibration values from the calibrator pipeline are
+! target_input_filenames   =  []  ## list of input MS filenames (full path)
+! h5parm_input_filename    =  /data/scratch/h5parm  ## filename of the calibration values from the calibrator pipeline
+
+## information about the output
+! target_output_filenames  = []  ## list of output MS filenames (full path)
+! h5parm_output_filenames  = []  ## list of output solution table filenames (full path)
 
 ## location of the software
 ! prefactor_directory      =  $PREFACTOR_PATH  ## path to your prefactor copy
 ! losoto_directory         =  $LOSOTO_PATH     ## path to your local LoSoTo installation
-
-##########################################
-###  parameters you may want to adjust  ##
-##########################################
 
 ## flagging
 ! flag_baselines           =  []   ## NDPPP-compatible pattern for baselines or stations to be flagged (may be an empty list, i.e.: [] )
@@ -69,16 +64,12 @@ pipeline.pluginpath        =  {{ prefactor_directory }}/plugins
 ## result directories
 ! results_directory        = {{ job_directory }}/results         ## location of the results
 ! inspection_directory     = {{ results_directory }}/inspection  ## directory where the inspection plots will be stored
-
-
-########################################################
-##                                                    ##
-##   BEGIN PIPELINE: DO NOT UPDATE BELOW THIS LINE!   ##
-##                                                    ##
-########################################################
+! msfiles_metadata_file    =  input.output.working_directory/input.output.job_name/msfiles.metadata
+! h5parm_metadata_file     =  input.output.working_directory/input.output.job_name/h5parm.metadata
+! parset_prefix            =  none
 
 # which steps to run
-pipeline.steps=[mk_inspect_dir, createmap_target, combine_data_target_map, get_ion_files, trans, ndppp_prep_target, create_ateam_model_map, make_sourcedb_ateam, expand_sourcedb_ateam, predict_ateam, ateamcliptar, combine_target_map, sortmap_target, do_sortmap_maps, dpppconcat, check_unflagged, check_unflagged_map, sky_tar, create_target_model_map, make_sourcedb_target, expand_sourcedb_target, gsmcal_parmmap, gsmcal_solve, gsmcal_apply, h5_imp_gsmsol_map, h5imp_gsmsol, plot_gsm_phases, gsmcal_antmap, make_structurefunction, old_plot_gsmphases, createmap_plots, copy_plots, mk_results_dir, make_results_mapfile, move_results, make_h5parm_metadata, make_ms_metadata]
+pipeline.steps=[mk_inspect_dir, createmap_target, create_output_msfiles_map, combine_data_target_map, get_ion_files, trans, ndppp_prep_target, create_ateam_model_map, make_sourcedb_ateam, expand_sourcedb_ateam, predict_ateam, ateamcliptar, combine_target_map, sortmap_target, do_sortmap_maps, dpppconcat, check_unflagged, check_unflagged_map, sky_tar, create_target_model_map, make_sourcedb_target, expand_sourcedb_target, gsmcal_parmmap, gsmcal_solve, gsmcal_apply, h5_imp_gsmsol_map, h5imp_gsmsol, plot_gsm_phases, gsmcal_antmap, make_structurefunction, old_plot_gsmphases, createmap_plots, copy_plots, mk_results_dir, make_results_mapfile, move_results, copy_output_h5parmfiles, make_msfiles_metadata, make_h5parm_metadata]
 
 # create the inspection_directory if needed
 mk_inspect_dir.control.kind               =  plugin
@@ -86,13 +77,20 @@ mk_inspect_dir.control.type               =  makeDirectory
 mk_inspect_dir.control.directory          =  {{ inspection_directory }}
 
 # generate a mapfile of all the target data
-createmap_target.control.kind            =   plugin
-createmap_target.control.type            =   createMapfile
-createmap_target.control.method          =   mapfile_from_folder
-createmap_target.control.mapfile_dir     =   input.output.mapfile_dir
-createmap_target.control.filename        =   createmap_target.mapfile
-createmap_target.control.folder          =   {{ target_input_path }}
-createmap_target.control.pattern         =   {{ target_input_pattern }}
+createmap_target.control.kind                           =   plugin
+createmap_target.control.type                           =   addListMapfile
+createmap_target.control.hosts                          =   [localhost]
+createmap_target.control.files                          =   {{ target_input_filenames }}
+createmap_target.control.mapfile_dir                    =   input.output.mapfile_dir
+createmap_target.control.filename                       =   createmap_target.mapfile
+
+# generate a mapfile of the output MS files
+create_output_msfiles_map.control.kind               =   plugin
+create_output_msfiles_map.control.type               =   addListMapfile
+create_output_msfiles_map.control.hosts              =   [localhost]
+create_output_msfiles_map.control.files              =   {{ target_output_filenames }}
+create_output_msfiles_map.control.mapfile_dir        =   input.output.mapfile_dir
+create_output_msfiles_map.control.filename           =   output_msfiles.mapfile
 
 # combine all entries into one mapfile, for the sortmap script
 combine_data_target_map.control.kind            =   plugin
@@ -119,7 +117,7 @@ trans.control.max_per_node      =  {{ num_proc_per_node }}
 trans.control.error_tolerance   =  {{ error_tolerance }}
 trans.control.mapfile_in        =  combine_data_target_map.output.mapfile
 trans.control.inputkey          =  indata
-trans.argument.flags            =  [indata, {{ cal_values_directory }}/instrument.h5imp_cal]
+trans.argument.flags            =  [indata, {{ h5parm_input_filename }}]
 trans.argument.ionex_server     =  {{ ionex_server }}
 trans.argument.ionex_prefix     =  {{ ionex_prefix }}
 trans.argument.ionexPath        =  {{ ionex_path }}
@@ -130,6 +128,8 @@ ndppp_prep_target.control.max_per_node                 = {{ num_proc_per_node_li
 ndppp_prep_target.control.error_tolerance              = {{ error_tolerance }}
 ndppp_prep_target.control.mapfiles_in                  = [createmap_target.output.mapfile]
 ndppp_prep_target.control.inputkeys                    = [input_file]
+ndppp_prep_target.control.mapfile_out                  = create_output_msfiles_map.output.mapfile
+ndppp_prep_target.control.outputkey                    = msout
 ndppp_prep_target.argument.numthreads                  = {{ max_dppp_threads }}
 ndppp_prep_target.argument.msin                        = input_file
 ndppp_prep_target.argument.msin.datacolumn             = DATA
@@ -146,21 +146,21 @@ ndppp_prep_target.argument.filter.remove               = true                   
 ndppp_prep_target.argument.flagamp.type                = preflagger
 ndppp_prep_target.argument.flagamp.amplmin             = 1e-30
 ndppp_prep_target.argument.applyclock.type             = applycal
-ndppp_prep_target.argument.applyclock.parmdb           = {{ cal_values_directory }}/instrument.h5imp_cal
+ndppp_prep_target.argument.applyclock.parmdb           = {{ h5parm_input_filename }}
 ndppp_prep_target.argument.applyclock.correction       = clock
 ndppp_prep_target.argument.applybandpass.type          = applycal
-ndppp_prep_target.argument.applybandpass.parmdb        = {{ cal_values_directory }}/instrument.h5imp_cal
+ndppp_prep_target.argument.applybandpass.parmdb        = {{ h5parm_input_filename }}
 ndppp_prep_target.argument.applybandpass.correction    = bandpass
 ndppp_prep_target.argument.applybandpass.updateweights = True
 ndppp_prep_target.argument.applyoffset.type            = applycal
-ndppp_prep_target.argument.applyoffset.parmdb          = {{ cal_values_directory }}/instrument.h5imp_cal
+ndppp_prep_target.argument.applyoffset.parmdb          = {{ h5parm_input_filename }}
 ndppp_prep_target.argument.applyoffset.correction      = XYoffset
 ndppp_prep_target.argument.applyoffset.updateweights   = True
 ndppp_prep_target.argument.applybeam.type              = applybeam
 ndppp_prep_target.argument.applybeam.usechannelfreq    = True
 ndppp_prep_target.argument.applybeam.updateweights     = True
 ndppp_prep_target.argument.applyrm.type                = applycal
-ndppp_prep_target.argument.applyrm.parmdb              = {{ cal_values_directory }}/instrument.h5imp_cal
+ndppp_prep_target.argument.applyrm.parmdb              = {{ h5parm_input_filename }}
 ndppp_prep_target.argument.applyrm.correction          = RMextract
 ndppp_prep_target.argument.flag2.type                  = aoflagger
 ndppp_prep_target.argument.flag2.keepstatistics        = false
@@ -495,20 +495,25 @@ move_results.control.mapfiles_in        =  [check_unflagged_map.output.mapfile,m
 move_results.control.inputkeys          =  [source,destination]
 move_results.control.arguments          =  [source,destination]
 
-# make feedback metadata for the output solutions
-make_h5parm_metadata.control.kind                    =   feedback
-make_h5parm_metadata.control.type                    =   get_metadata
-make_h5parm_metadata.control.mapfile_in              =   h5imp_gsmsol.output.mapfile
-make_h5parm_metadata.control.inputkey                =   h5parm
-make_h5parm_metadata.control.metadata_file           =   input.output.working_directory/input.output.job_name/gsmsol.metadata
-make_h5parm_metadata.control.product_type            =   CalibrationSolutions
-make_h5parm_metadata.control.arguments               =   [h5parm]
+# copy h5parm to output files
+copy_output_h5parmfiles.control.kind             =   plugin
+copy_output_h5parmfiles.control.type             =   copyFiles
+copy_output_h5parmfiles.control.hosts            =   [localhost]
+copy_output_h5parmfiles.control.input_mapfile    =   h5imp_gsmsol.output.mapfile
+copy_output_h5parmfiles.control.output_files     =   {{ h5parm_output_filenames }}
+copy_output_h5parmfiles.control.mapfile_dir      =   input.output.mapfile_dir
+copy_output_h5parmfiles.control.filename         =   output_h5parmfiles.mapfile
 
-# make feedback metadata for the output MS files
-make_ms_metadata.control.kind                    =   feedback
-make_ms_metadata.control.type                    =   get_metadata
-make_ms_metadata.control.mapfile_in              =   make_results_mapfile.output.mapfile
-make_ms_metadata.control.inputkey                =   ms
-make_ms_metadata.control.metadata_file           =   input.output.working_directory/input.output.job_name/ms.metadata
-make_ms_metadata.control.product_type            =   Correlated
-make_ms_metadata.control.arguments               =   [ms]
+# make the metadata for the output MS files
+make_msfiles_metadata.control.kind                   =   feedback
+make_msfiles_metadata.control.mapfile_in             =   ndppp_prep_target.output.mapfile
+make_msfiles_metadata.control.metadata_file          =   {{ msfiles_metadata_file }}
+make_msfiles_metadata.control.product_type           =   Correlated
+make_msfiles_metadata.control.parset_prefix          =   {{ parset_prefix }}
+
+# make the metadata for the output solutions
+make_h5parm_metadata.control.kind                    =   feedback
+make_h5parm_metadata.control.mapfile_in              =   copy_output_h5parmfiles_map.output.mapfile
+make_h5parm_metadata.control.metadata_file           =   {{ h5parm_metadata_file }}
+make_h5parm_metadata.control.product_type            =   InstrumentModel
+make_h5parm_metadata.control.parset_prefix           =   {{ parset_prefix }}
