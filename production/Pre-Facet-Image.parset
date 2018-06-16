@@ -18,30 +18,23 @@
 # The Pre-Facet pipelines will supply exactly this kind of data.                 #
 ##################################################################################
 
-##########################################
-### parameters you will need to adjust  ##
-##########################################
-
 ## information about the input data
-! data_input_path          = /data/scratch/drabent             ## specify the directory where your concatenated target data are stored
-! data_input_pattern       = L*.pre-cal.ms                     ## regular expression pattern of all your calibrator files
-! direction_indep_parmDBs  = /instrument_directionindependent  ## name of the direction independent parmDBs inside the measurement sets
+! data_input_filenames     =  []  ## list of input MS filenames (full path)
+
+## information about the output
+! image_output_filenames   =  []  ## list of output image filenames (full path)
 
 ## location of the software
 ! prefactor_directory      =  $PREFACTOR_PATH      ## path to your prefactor copy
 ! wsclean_executable       =  $WSCLEAN_EXECUTABLE  ## path to your local WSClean executable
 
-##########################################
-###  parameters you may want to adjust  ##
-##########################################
-
 ## imaging parameters
-! cellsize_highres_deg     = 0.00208  ## cellsize in degrees, 0.00208 deg is about 7.5 arcsec
-! fieldsize_highres        = 2.5      ## size of the image is this value times the FWHM of mean semi-major axis of the station beam
-! maxlambda_highres        = 7000     ## maximum uv-distance in lambda that will be used for imaging
-! image_padding            = 1.4      ## how much padding shall we add during the imaging?
-! axis_stretch             = 1.0      ## how much shall the y-axis be stretched or compressed?
-! idg_mode                 = hybrid   ## IDG mode to use: cpu or hybrid
+! cellsize_highres_deg     =  0.00208  ## cellsize in degrees, 0.00208 deg is about 7.5 arcsec
+! fieldsize_highres        =  2.5      ## size of the image is this value times the FWHM of mean semi-major axis of the station beam
+! maxlambda_highres        =  7000     ## maximum uv-distance in lambda that will be used for imaging
+! image_padding            =  1.4      ## how much padding shall we add during the imaging?
+! axis_stretch             =  1.0      ## how much shall the y-axis be stretched or compressed?
+! idg_mode                 =  hybrid   ## IDG mode to use: cpu or hybrid (= CPU + GPU)
 
 ## pipeline performance
 ! max_imagers_per_node     =  2      ## number of simultaneous imager process per node
@@ -61,26 +54,27 @@ pipeline.pluginpath        =  {{ prefactor_directory }}/plugins
 ! results_directory        =  {{ job_directory }}/results         ## location of the results
 ! inspection_directory     =  {{ results_directory }}/inspection  ## directory where the images will be stored
 ! local_scratch_dir        =  /tmp                                ## scratch directory for wsclean (can be local to the processing nodes!)
-
-
-########################################################
-##                                                    ##
-##   BEGIN PIPELINE: DO NOT UPDATE BELOW THIS LINE!   ##
-##                                                    ##
-########################################################
+! images_metadata_file     =  input.output.working_directory/input.output.job_name/images.metadata
+! parset_prefix            =  none
 
 # which steps to run
-pipeline.steps = [create_ms_map, combine_mapfile, do_magic, do_magic_maps, combine_mapfile_deep,  wsclean_high_deep, createmap_high_deep_image, make_source_list, move_high_deep, make_image_metadata]
+pipeline.steps = [create_ms_map, create_output_images_map, combine_mapfile, do_magic, do_magic_maps, combine_mapfile_deep,  wsclean_high_deep, createmap_high_deep_image, make_source_list, move_high_deep, make_image_metadata]
 
+# generate a mapfile of all the target data
+create_ms_map.control.kind                           =   plugin
+create_ms_map.control.type                           =   addListMapfile
+create_ms_map.control.hosts                          =   [localhost]
+create_ms_map.control.files                          =   {{ data_input_filenames }}
+create_ms_map.control.mapfile_dir                    =   input.output.mapfile_dir
+create_ms_map.control.filename                       =   create_ms_map.mapfile
 
-# create a mapfile with all MSs, length = nfiles
-create_ms_map.control.kind                      =   plugin
-create_ms_map.control.type                      =   createMapfile
-create_ms_map.control.method                    =   mapfile_from_folder
-create_ms_map.control.mapfile_dir               =   input.output.mapfile_dir
-create_ms_map.control.filename                  =   create_ms_map.mapfile
-create_ms_map.control.folder                    =   {{ data_input_path }}
-create_ms_map.control.pattern                   =   {{ data_input_pattern }}
+# generate a mapfile of the output images
+create_output_images_map.control.kind               =   plugin
+create_output_images_map.control.type               =   addListMapfile
+create_output_images_map.control.hosts              =   [localhost]
+create_output_images_map.control.files              =   {{ image_output_filenames }}
+create_output_images_map.control.mapfile_dir        =   input.output.mapfile_dir
+create_output_images_map.control.filename           =   output_images.mapfile
 
 # generate a mapfile with all files in a single entry, length = 1
 combine_mapfile.control.kind                    =  plugin
@@ -124,6 +118,7 @@ combine_mapfile_deep.control.filename                =  combine_mapfile_deep.map
 wsclean_high_deep.control.kind                      =   recipe
 wsclean_high_deep.control.type                      =   executable_args
 wsclean_high_deep.control.executable                =   {{ wsclean_executable }}
+wsclean_high_deep.control.mapfile_out               =   create_output_images_map.output.mapfile
 wsclean_high_deep.control.outputsuffixes            =   [-MFS-image.fits,-MFS-model.fits]
 wsclean_high_deep.control.outputkey                 =   name
 wsclean_high_deep.control.args_format               =   wsclean
@@ -189,9 +184,7 @@ move_high_deep.control.arguments                    =  [source,{{ inspection_dir
 
 # make feedback metadata for the output image
 make_image_metadata.control.kind                    =   feedback
-make_image_metadata.control.type                    =   get_metadata
 make_image_metadata.control.mapfile_in              =   createmap_high_deep_image.output.mapfile
-make_image_metadata.control.inputkey                =   img
-make_image_metadata.control.metadata_file           =   input.output.working_directory/input.output.job_name/image.metadata
+make_image_metadata.control.metadata_file           =   {{ images_metadata_file }}
 make_image_metadata.control.product_type            =   SkyImage
-make_image_metadata.control.arguments               =   [img]
+make_image_metadata.control.parset_prefix           =   {{ parset_prefix }}

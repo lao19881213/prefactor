@@ -12,8 +12,8 @@
 ! cal_input_filenames      =  []  ## list of input MS filenames (full path)
 
 ## information about the output
-! cal_output_filenames     = []  ## list of output MS filenames (full path)
-! h5parm_output_filenames  = []  ## list of output solution table filenames (full path)
+! cal_output_filenames     =  []  ## list of output MS filenames (full path)
+! h5parm_output_filenames  =  []  ## list of output solution table filenames (full path)
 
 ## location of the software
 ! prefactor_directory      =  $PREFACTOR_PATH        ## path to your prefactor copy
@@ -291,13 +291,13 @@ copy_cal_h5.control.inputkey                         =   source
 copy_cal_h5.control.arguments                        =   [source,{{ cal_values_directory }}]
 
 # copy h5parm to output files
-copy_output_h5parmfiles.control.kind             =   plugin
-copy_output_h5parmfiles.control.type             =   copyFiles
-copy_output_h5parmfiles.control.hosts            =   [localhost]
-copy_output_h5parmfiles.control.input_mapfile    =   h5imp_cal.output.mapfile
-copy_output_h5parmfiles.control.output_files     =   {{ h5parm_output_filenames }}
-copy_output_h5parmfiles.control.mapfile_dir      =   input.output.mapfile_dir
-copy_output_h5parmfiles.control.filename         =   output_h5parmfiles.mapfile
+copy_output_h5parmfiles.control.kind                 =   plugin
+copy_output_h5parmfiles.control.type                 =   copyFiles
+copy_output_h5parmfiles.control.hosts                =   [localhost]
+copy_output_h5parmfiles.control.input_mapfile        =   h5imp_cal.output.mapfile
+copy_output_h5parmfiles.control.output_files         =   {{ h5parm_output_filenames }}
+copy_output_h5parmfiles.control.mapfile_dir          =   input.output.mapfile_dir
+copy_output_h5parmfiles.control.filename             =   output_h5parmfiles.mapfile
 
 # make the metadata for the output MS files
 make_msfiles_metadata.control.kind                   =   feedback
