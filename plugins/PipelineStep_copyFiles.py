@@ -11,7 +11,11 @@ def plugin_main(args, **kwargs):
     Parameters
     ----------
     input_mapfile: str
-        Filename of input mapfile with file that is to be copied
+        Filename of input mapfile with file that is to be copied. Either this or
+        input_file must be specified
+    input_file : str
+        Filename of input file that is to be copied. Either this or
+        input_mapfile must be specified
     output_files : list or str
         List of files or mapfile with such a list as the only entry. May be
         given as a list of strings or as a string (e.g.,
@@ -51,8 +55,11 @@ def plugin_main(args, **kwargs):
     for i in range(len(files)-len(hosts)):
         hosts.append(hosts[i])
 
-    map_in = DataMap.load(kwargs['input_mapfile'])
-    file_in = map_in[0].file
+    if 'input_file' in kwargs:
+        file_in = kwargs['input_file']
+    else:
+        map_in = DataMap.load(kwargs['input_mapfile'])
+        file_in = map_in[0].file
     map_out = DataMap([])
     for h, f in zip(hosts, files):
         # Copy file to output, deleting exiting file if needed
