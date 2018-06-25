@@ -510,7 +510,7 @@ make_msfiles_metadata.control.parset_prefix          =   {{ parset_prefix }}
 
 # make the metadata for the output solutions
 make_h5parm_metadata.control.kind                    =   feedback
-make_h5parm_metadata.control.mapfile_in              =   copy_output_h5parmfiles_map.output.mapfile
+make_h5parm_metadata.control.mapfile_in              =   copy_output_h5parmfiles.output.mapfile
 make_h5parm_metadata.control.metadata_file           =   {{ h5parm_metadata_file }}
 make_h5parm_metadata.control.product_type            =   InstrumentModel
 make_h5parm_metadata.control.parset_prefix           =   {{ parset_prefix }}
