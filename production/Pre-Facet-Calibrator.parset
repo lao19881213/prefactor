@@ -20,8 +20,8 @@
 ! losoto_directory         =  $LOSOTO_PATH           ## path to your local LoSoTo installation
 
 ## flagging
-! bad_SB_list              =  "307;308"  ## semicolumn-separated list of subbands to be mitigated, e.g., due to RFI
-! flag_baselines           =  []         ## NDPPP-compatible pattern for baselines or stations to be flagged (may be an empty list, i.e.: [] )
+! bad_SB_list              =  ""  ## semicolumn-separated list of subbands to be mitigated, e.g., "307;308"
+! flag_baselines           =  []  ## NDPPP-compatible pattern for baselines or stations to be flagged
 
 ## reference
 ! reference_station        =  CS001HBA0  ## name of the station that will be used as a reference for the phase-plots
