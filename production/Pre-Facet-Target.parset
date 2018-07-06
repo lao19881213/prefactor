@@ -69,7 +69,7 @@ pipeline.pluginpath        =  {{ prefactor_directory }}/plugins
 ! parset_prefix            =  none
 
 # which steps to run
-pipeline.steps=[mk_inspect_dir, createmap_target, create_output_msfiles_map, combine_data_target_map, get_ion_files, trans, ndppp_prep_target, create_ateam_model_map, make_sourcedb_ateam, expand_sourcedb_ateam, predict_ateam, ateamcliptar, combine_target_map, sortmap_target, do_sortmap_maps, dpppconcat, check_unflagged, check_unflagged_map, sky_tar, create_target_model_map, make_sourcedb_target, expand_sourcedb_target, gsmcal_parmmap, gsmcal_solve, gsmcal_apply, h5_imp_gsmsol_map, h5imp_gsmsol, plot_gsm_phases, gsmcal_antmap, make_structurefunction, old_plot_gsmphases, createmap_plots, copy_plots, mk_results_dir, make_results_mapfile, move_results, copy_output_h5parmfiles, make_msfiles_metadata, make_h5parm_metadata]
+pipeline.steps=[mk_inspect_dir, createmap_target, create_output_msfiles_map, combine_data_target_map, get_ion_files, trans, ndppp_prep_target, create_ateam_model_map, make_sourcedb_ateam, expand_sourcedb_ateam, predict_ateam, ateamcliptar, combine_target_map, sortmap_target, do_sortmap_maps, dpppconcat, check_unflagged, check_unflagged_map, sky_tar, create_target_model_map, make_sourcedb_target, expand_sourcedb_target, gsmcal_parmmap, gsmcal_solve, gsmcal_apply, h5_imp_gsmsol_map, h5imp_gsmsol, plot_gsm_phases, gsmcal_antmap, make_structurefunction, old_plot_gsmphases, createmap_plots, copy_plots, mk_results_dir, make_results_mapfile, move_results, make_msfiles_metadata]
 
 # create the inspection_directory if needed
 mk_inspect_dir.control.kind               =  plugin
@@ -493,13 +493,13 @@ move_results.control.inputkeys          =  [source,destination]
 move_results.control.arguments          =  [source,destination]
 
 # copy h5parm to output files
-copy_output_h5parmfiles.control.kind             =   plugin
-copy_output_h5parmfiles.control.type             =   copyFiles
-copy_output_h5parmfiles.control.hosts            =   [localhost]
-copy_output_h5parmfiles.control.input_file       =   input.output.working_directory/h5imp_gsmsol_losoto.h5
-copy_output_h5parmfiles.control.output_files     =   {{ h5parm_output_filenames }}
-copy_output_h5parmfiles.control.mapfile_dir      =   input.output.mapfile_dir
-copy_output_h5parmfiles.control.filename         =   output_h5parmfiles.mapfile
+# copy_output_h5parmfiles.control.kind             =   plugin
+# copy_output_h5parmfiles.control.type             =   copyFiles
+# copy_output_h5parmfiles.control.hosts            =   [localhost]
+# copy_output_h5parmfiles.control.input_file       =   input.output.working_directory/h5imp_gsmsol_losoto.h5
+# copy_output_h5parmfiles.control.output_files     =   {{ h5parm_output_filenames }}
+# copy_output_h5parmfiles.control.mapfile_dir      =   input.output.mapfile_dir
+# copy_output_h5parmfiles.control.filename         =   output_h5parmfiles.mapfile
 
 # make the metadata for the output MS files
 make_msfiles_metadata.control.kind                   =   feedback
@@ -509,8 +509,8 @@ make_msfiles_metadata.control.product_type           =   Correlated
 make_msfiles_metadata.control.parset_prefix          =   {{ parset_prefix }}
 
 # make the metadata for the output solutions
-make_h5parm_metadata.control.kind                    =   feedback
-make_h5parm_metadata.control.mapfile_in              =   copy_output_h5parmfiles.output.mapfile
-make_h5parm_metadata.control.metadata_file           =   {{ h5parm_metadata_file }}
-make_h5parm_metadata.control.product_type            =   InstrumentModel
-make_h5parm_metadata.control.parset_prefix           =   {{ parset_prefix }}
+# make_h5parm_metadata.control.kind                    =   feedback
+# make_h5parm_metadata.control.mapfile_in              =   copy_output_h5parmfiles.output.mapfile
+# make_h5parm_metadata.control.metadata_file           =   {{ h5parm_metadata_file }}
+# make_h5parm_metadata.control.product_type            =   InstrumentModel
+# make_h5parm_metadata.control.parset_prefix           =   {{ parset_prefix }}
